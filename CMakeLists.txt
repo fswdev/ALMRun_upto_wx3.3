@@ -105,7 +105,7 @@ endif()
 # --- 4. 链接所有库到主程序 ---
 target_link_libraries(${PROJ_NAME}
     # 链接 Lua 库
-	"${THIRD_PARTY_DIR}/LuaJIT-2.1/src/lua51.lib"
+    "${THIRD_PARTY_DIR}/LuaJIT-2.1/src/lua51.lib"
     
     # --- 链接 Windows 核心库 ---
     # 添加 Ws2_32 来解决所有网络函数链接错误

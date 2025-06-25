@@ -17,3 +17,4 @@ build_x86/
 third_party/Everything-SDK/
 third_party/LuaJIT-2.1/
 CMakeLists - *
+*.rar
