@@ -1,0 +1,166 @@
+主要分为两大步：
+1.  **编译依赖库 wxWidgets**。
+2.  **编译主项目 ALMRun**: 使用上一步编译好的 wxWidgets 库来构建 ALMRun。
+
+---
+
+### **准备工作：下载所需资源**
+
+在开始之前，请确保已经下载并安装了以下工具：
+
+1.  **Visual Studio 2022**: 确保在安装时勾选了 **“使用 C++ 的桌面开发”** 。
+2.  **CMake**: [下载地址](https://cmake.org/download/)。下载并安装 `Windows x64 Installer` 版本即可。安装时建议勾选 "Add CMake to the system PATH for all users"。
+3.  **wxWidgets 3.3.0 源码**: [GitHub 发布页下载地址](https://github.com/wxWidgets/wxWidgets/releases/download/v3.3.0/wxWidgets-3.3.0.zip)。请下载 `wxWidgets-3.3.0.zip` (Source code)。
+4.  **ALMRun 源码**: 我们将使用 Git 来克隆。
+
+为了方便管理，建议在 D 盘或你喜欢的位置创建一个开发目录，例如 `D:\Dev`。
+注：空余空间要大于10G
+
+---
+
+### **第一步：编译和配置 wxWidgets 3.3.0**
+
+这是最关键的一步。ALMRun 需要链接到 wxWidgets 的库文件（.lib）和头文件（.h）。
+
+#### **1.1 解压 wxWidgets 源码**
+
+将下载的 `wxWidgets-3.3.0.zip` 解压到一个没有中文和空格的路径下。
+例如：`D:\Dev\wxWidgets-3.3.0`
+
+#### **1.2 使用 Visual Studio 编译 wxWidgets**
+
+wxWidgets 源码包里自带了为 Visual Studio 准备好的解决方案文件，这是最简单可靠的编译方法。
+
+1.  **打开解决方案**: 导航到 `D:\Dev\wxWidgets-3.3.0\build\msw` 目录。会看到很多 `.sln` 文件。由于使用的是 VS2022，请双击打开 `wx_vc17.sln`。(`vc17` 对应 VS2022)。
+
+2.  **选择编译配置**: 在 Visual Studio 顶部的工具栏中，选择需要的编译配置。为了后续能同时调试和发布 ALMRun，建议编译两个版本：
+    *   **Debug / x64**
+    *   **Release / x64**
+
+    
+
+3.  **开始编译 (Debug 版本)**:
+    *   确保配置为 **Debug** 和 **x64**。
+    *   在右侧的“解决方案资源管理器”中，右键点击最顶层的“解决方案 'wx_vc17'”，然后选择 **“生成解决方案”**。
+    *   编译过程会持续几分钟，请耐心等待。它会编译出所有需要的静态库（.lib）和动态库（.dll）。
+
+4.  **开始编译 (Release 版本)**:
+    *   编译成功后，将配置切换为 **Release** 和 **x64**。
+    *   再次右键点击解决方案，选择 **“生成解决方案”**。
+
+编译完成后，所有生成的文件都会在 `D:\Dev\wxWidgets-3.3.0\lib` 目录下。例如，64位的 DLL 和 LIB 文件会分别位于 `lib\vc_x64_dll` 和 `lib\vc_x64_lib`。
+
+---
+
+### **第二步：编译 ALMRun 项目**
+
+现在 wxWidgets 已经准备就绪，可以开始编译 ALMRun 了。
+
+#### **2.0 获取 ALMRun 源码**
+
+打开一个命令行终端（CMD 或 PowerShell），进入开发目录，然后使用 Git 克隆项目：
+```bash
+cd D:\Dev 
+git clone https://github.com/fswdev/ALMRun_upto_wx3.3.git
+```
+现在源码路径是 `D:\Dev\ALMRun`。
+
+#### **2.1 获取 Lua 源码**
+
+直接从以下链接下载LuaJIT的源码：
+```bash
+https://github.com/LuaJIT/LuaJIT/archive/refs/heads/v2.1.zip
+```
+把源码解压到 `D:\Dev\ALMRun\third_party\`下。
+编译luajit：
+64位：windos->command -> x64 Native Tools Command Prompt for VS 2022
+32位：windos->command -> x86 Native Tools Command Prompt for VS 2022
+cd D:\Dev\ALMRun\third_party\LuaJIT-2.1\src
+msvcbuild.bat
+编译完成会显示：=== Successfully built LuaJIT for Windows/x86 ===
+
+#### **2.2 获取 Everything-SDK**
+
+直接从以下链接下载Lua的源码：
+```bash
+https://www.voidtools.com/Everything-SDK.zip
+```
+把源码解压到 `D:\Dev\ALMRun\third_party\Everything-SDK`下，
+确认目录结构如下：
+```bash
+Dev\ALMRun\third_party
+├─Everything-SDK
+│  ├─dll
+│  ├─include
+│  ├─ipc
+│  ├─lib
+│  ├─src
+│  └─vs
+├─LuaJIT-2.1 
+│  └─src
+└─vld
+    ├─include
+    └─lib
+        ├─win32
+        │  └─debug
+        └─win64
+            └─debug
+```
+
+
+#### **2.3 使用 CMake 生成 Visual Studio 项目**
+
+使用 CMake 读取 ALMRun 的 `CMakeLists.txt` 文件，并生成一个 VS2022 的解决方案（.sln）。
+
+1.  在 `D:\Dev\ALMRun` 目录下创建一个用于存放生成文件的文件夹，通常命名为 `build`。这能保持源码目录的干净。
+    ```bash
+    cd D:\Dev\ALMRun
+    mkdir build
+    cd build
+    ```
+
+确认目录结构如下：
+```bash
+D:\Dev
+├─ALMRun
+│  └─build
+└─wxWidgets-3.3.0
+```
+
+2.  运行 CMake 命令来生成项目文件。
+	先修改 CMakeLists.txt 中的 WX路径，为你的实际路径。
+    ```bash
+	# --- 1. 配置 wxWidgets (按你的要求保留) ---
+	# 你的 wxWidgets 路径
+	set(WXWIN "D:/Dev/wxWidgets-3.3.0" CACHE PATH "Path to wxWidgets")
+    ```
+	
+    ```bash
+    cmake -G "Visual Studio 17 2022" -A x64 ..	
+    # -G "Visual Studio 17 2022" 指定生成器为 VS2022
+    # -A x64 指定平台为 64位 (必须与你编译 wxWidgets 时选择的平台一致)
+    # ..  表示 CMakeLists.txt 文件在上一级目录
+    ```
+ 
+	以下命令生成 32 位的编译。
+    ```bash
+    cmake -G "Visual Studio 17 2022" -A win32 ..	
+    ```
+ 
+#### **2.3 在 Visual Studio 中编译 ALMRun**
+
+1.  CMake 成功运行后，会在 `D:\Dev\ALMRun\build` 目录下生成一个 `ALMRun.sln` 文件。双击打开它。
+2.  在 Visual Studio 中，像之前一样选择编译配置，例如 **Debug / x64**。
+3.  在“解决方案资源管理器”中，找到 `ALMRun` 项目，右键点击它，选择 **“设为启动项目”** (它应该是默认的，但检查一下无妨)。
+4.  再次右键点击 `ALMRun` 项目，选择 **“生成”**。
+
+编译完成后。`.exe` 文件会生成在 `D:\Dev\ALMRun\build\Debug` 或 `...\build\Release` 目录下。
+
+#### **2.4 运行程序 (最后一步)**
+复制\third_party\Everything-SDK\dll\Everything64.dll 到 D:\Dev\ALMRun\build\Debug
+复制\bin 目录下的所有文件到 D:\Dev\ALMRun\build\Debug
+
+复制完成后，双击 `ALMRun.exe`，程序现在应该可以正常运行了！Alt+R呼出界面
+---
+ 
+按照以上步骤操作，你应该可以顺利编译并运行 ALMRun。祝你好运！

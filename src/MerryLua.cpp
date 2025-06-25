@@ -2,8 +2,41 @@
 #include "MerryLuaExport.h"
 #include "SkinConfig.h"
 
+#include <shellapi.h>
+#include <timeapi.h>
+
 MerryLua* g_lua = NULL;
 const char *MerryLua::lua_func_str[] = {"toggleMerry","ReConfig","CmdCallFunc","HookCompare","plugin_command","read_altrun_config"};
+
+
+#ifdef __WXMSW__
+
+static int LuaSHSpecialFolders(lua_State* L)
+{
+	lua_pushstring(L, wxStandardPaths::MSWGetShellDir(lua_tointeger(L, -1)));
+	return 1;
+}
+
+static int LuaSHEmptyRecycleBin(lua_State* L)
+{
+	DWORD Flags = lua_tointeger(L, 3);
+	wxString RootPath = wxString(lua_tostring(L, 2), wxConvLocal);
+	HWND hwnd = (HWND)lua_tohwnd(L, 1);
+	lua_pushinteger(L, SHEmptyRecycleBin(hwnd, RootPath.c_str(), Flags));
+	return 1;
+}
+
+static int LuaEmptyRecycleBin(lua_State* L)
+{
+	DWORD Flags = 0;
+	if (lua_tointeger(L, -1) == 1)
+		Flags = SHERB_NOCONFIRMATION;
+	lua_pushinteger(L, SHEmptyRecycleBin(NULL, NULL, Flags));
+	return 1;
+}
+
+#endif
+
 MerryLua::MerryLua()
 {
 	L = luaL_newstate();
@@ -262,3 +295,5 @@ void MerryLua::OnUndefinedCommand(const wxString& commandName, const wxString& c
 		lua_pop(L, 1);
 	}
 }
+
+

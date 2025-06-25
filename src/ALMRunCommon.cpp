@@ -836,7 +836,7 @@ DWORD RunCMD(const wxString& cmdLine,const wxString& cmdArg,const wxString& work
 		arg = ::wxExpandEnvVars(arg);
 	}
 
-	return g_controller->ShellExecute(cmd,arg,workdir);
+	return g_controller->ShellExecute_almrun(cmd,arg,workdir);
 }
 
 static int AddALTRunCMD(lua_State *L)

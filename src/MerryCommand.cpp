@@ -182,14 +182,12 @@ int MerryCommand::GetOrder() const
 
 void MerryCommand::Execute(const wxString& commandArg) const
 {
-
 	if (!g_lua)
 		return;
 
 	lua_State* L = g_lua->GetLua();
 	wxString cmdArg = commandArg;
 	assert(L);
-
 	#ifdef __WXMSW__
 	if (PID > 1)//禁止多个进程
 	{
@@ -201,8 +199,9 @@ void MerryCommand::Execute(const wxString& commandArg) const
 	}
 	#endif
 
+
 	if (!LocationExec && m_commandLine.size() && cmdArg.empty() && (m_commandLine[0] == '+' || m_commandLine.Find("{%p+}") != wxNOT_FOUND))
-	{
+	{ 
 		DlgParam *dlg = new DlgParam(NULL,-1,m_commandName);
 		if (dlg->ShowModal() == wxID_OK)
 			cmdArg = dlg->getvalue();
@@ -216,10 +215,17 @@ void MerryCommand::Execute(const wxString& commandArg) const
 		::wxGetApp().GetFrame().Hide();
 
 	if (m_commandFunc == 0)
-	{
+	{ 
 		if (!g_lua->get_func(LUA_CMDRun_FUNC))
-		{
-			const_cast<MerryCommand*>(this)->PID = RunCMD(m_commandLine,cmdArg,m_commandWorkDir);
+		{ 
+			/*if (cmdArg.IsSameAs("MENU_CMD_OPENDIR")) {
+				wxFileName fileName(m_commandLine);
+				wxString path_only = fileName.GetPath();  
+				const_cast<MerryCommand*>(this)->PID = RunCMD(path_only, cmdArg, m_commandWorkDir);
+			}
+			else {*/
+				const_cast<MerryCommand*>(this)->PID = RunCMD(m_commandLine, cmdArg, m_commandWorkDir);
+			//}
 			goto ExecuteEnd;
 		}
 		lua_pushstring(L, m_commandLine.c_str());
@@ -227,7 +233,7 @@ void MerryCommand::Execute(const wxString& commandArg) const
 		lua_pushstring(L, m_commandWorkDir.c_str());
 	}
 	else if (m_commandFunc == LUA_NOREF)
-	{
+	{		
 		if (m_commandLine == "LastCmd" && LastCmd)
 			LastCmd->Execute(wxEmptyString);
 		return;

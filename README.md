@@ -1,3 +1,12 @@
+*  1. 使用wxWidgets-3.3.0编译ALMRun
+*  2. 重新生成了CMakeLists.txt,使项目管理与库依赖更合理。
+*  3. 升级 Everything-SDK 最新版(2025-06-25)
+*  4. Lua静态编译进项目了。https://github.com/lua/lua 下载文件，解压到third_party\lua\下。 		
+		**目录结构如:third_party\lua\onelua.c**
+*  5. 同时修复一些小bug
+*  6. 加入编译教程
+
+=======
 ALMRun
 =======
 *******

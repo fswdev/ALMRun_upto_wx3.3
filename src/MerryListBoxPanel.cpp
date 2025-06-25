@@ -263,10 +263,10 @@ void MerryListBoxPanel::onPopMenu(wxCommandEvent& e)
 			}
 			break;
 		case MENU_CMD_OPENDIR:
-			LocationExec = true;
+			LocationExec = true; 
 			GetSelectionCommand()->Execute(wxEmptyString);
 			break;
-		case MENU_CMD_RUNAS:
+		case MENU_CMD_RUNAS: 
 			cmdrun_flags |= CMDRUN_FLAG_RUNAS;
 			GetSelectionCommand()->Execute(wxEmptyString);
 			break;

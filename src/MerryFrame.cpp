@@ -9,6 +9,7 @@
 #include "MerryHotkey.h"
 #include "MerryController.h"
 #include <wx/sound.h>
+#include <shellapi.h>
 
 //#define DEBUG_ALWAYS_SHOW
 

@@ -11,12 +11,16 @@
 #include <wx/stdpaths.h>
 #include "dlgconfig.h"
 #include "ALMRunCommon.h"
+#include <timeapi.h> 
+
+
+
 extern "C"
 {
 #ifndef   EVERYTHING_DLL       //如果没有定义这个宏  
 #define   EVERYTHING_DLL       //定义这个宏  
 #include "../third_party/Everything-SDK/include/Everything.h"
-#pragma comment(lib,"../third_party/Everything-SDK/lib/Everything.lib")
+//#pragma comment(lib,"../third_party/Everything-SDK/lib/Everything.lib")
 #endif 
 };
 
@@ -96,7 +100,7 @@ static int LuaShellExecute(lua_State* L)
 	if (chkwow)
 		Wow64Disable(&wowOld);
 #endif
-	lua_pushinteger(L, g_controller->ShellExecute(commandName, commandArg, workingDir, show));
+	lua_pushinteger(L, g_controller->ShellExecute_almrun(commandName, commandArg, workingDir, show));
 #ifdef __WXMSW__
 	if (chkwow)
 		Wow64Revert(wowOld);
@@ -478,33 +482,7 @@ static int LuaDir(lua_State* L)
 	files.Clear();
 	return 1;
 }
-#ifdef __WXMSW__
 
-static int LuaSHSpecialFolders(lua_State* L)
-{
-	lua_pushstring(L,wxStandardPaths::MSWGetShellDir(lua_tointeger(L,-1)));
-	return 1;
-}
-
-static int LuaSHEmptyRecycleBin(lua_State* L)
-{
-	DWORD Flags = lua_tointeger(L,3);
-	wxString RootPath = wxString(lua_tostring(L,2),wxConvLocal);
-	HWND hwnd = (HWND)lua_tohwnd(L,1);
-	lua_pushinteger(L,SHEmptyRecycleBin(hwnd,RootPath.c_str(),Flags));
-	return 1;
-}
-
-static int LuaEmptyRecycleBin(lua_State* L)
-{
-	DWORD Flags = 0;
-	if (lua_tointeger(L,-1) == 1)
-		Flags = SHERB_NOCONFIRMATION;
-	lua_pushinteger(L,SHEmptyRecycleBin(NULL,NULL,Flags));
-	return 1;
-}
-
-#endif
 
 static int LuaSetEnv(lua_State* L)
 {

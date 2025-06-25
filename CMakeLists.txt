@@ -1,124 +1,165 @@
-cmake_minimum_required(VERSION 2.8.11)
-set(PROJ_NAME ALMRun)
-set(CMAKE_VS_PLATFORM_TOOLSET v110_xp)
-project(${PROJ_NAME})
-# platform
-math(EXPR BIT "${CMAKE_SIZEOF_VOID_P} * 8")
-if(WIN32)
-	set(PLATFORM win${BIT})
-	# wxWidgets path
-	set(WXWIN $ENV{WXWIN})
-	if (NOT WXWIN)
-	    set(WXWIN D:/dev/wxWidgets)
-	ENDIF()
-	if (NOT EXISTS ${WXWIN}/include/msvc/wx/setup.h)
-	    MESSAGE(FATAL_ERROR "\nwxWidgets ������(${WXWIN})���ܲ���ȷ\n������Ҫ����wxWidgets 2.9.5���ϰ汾")
-endif()
-elseif(APPLE)
-	set(PLATFORM macos)
-elseif(UNIX)
-	set(PLATFORM linux${BIT})
-else()
-	message(FATAL_ERROR "The platform isn't supported")
-endif()
-message(STATUS "Platform - ${PLATFORM}")
-# build type
-set(ALL_BUILD_TYPE Release Debug)
-if(NOT CMAKE_BUILD_TYPE)
-	list(GET ALL_BUILD_TYPE 0 BUILD_TYPE_0)
-	set(CMAKE_BUILD_TYPE ${BUILD_TYPE_0})
-endif()
-foreach(BUILD_TYPE ${ALL_BUILD_TYPE})
-	string(TOLOWER ${BUILD_TYPE} BUILD_TYPE_LOWER)
-	string(TOLOWER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_LOWER)
-	if(${BUILD_TYPE_LOWER} STREQUAL ${CMAKE_BUILD_TYPE_LOWER})
-		set(IS_VALID_BUILD_TYPE 1)
-	endif()
-endforeach()
-if(NOT IS_VALID_BUILD_TYPE)
-	message(FATAL_ERROR "Build type ${CMAKE_BUILD_TYPE} isn't supported")
-endif()
-message(STATUS "Build type (Makefile) - ${CMAKE_BUILD_TYPE}")
-# set output directory
+cmake_minimum_required(VERSION 3.5)
 
-#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
-# add executable
+# --- 核心设置 ---
+set(PROJ_NAME ALMRun)
+project(${PROJ_NAME})
+add_definitions(-DWIN32_LEAN_AND_MEAN) # 解决 Winsock 冲突
+# 1. 通用架构检测 (适用于所有平台)
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(ARCH_NAME "x64")
+    set(ARCH_BITS "64")
+else()
+    set(ARCH_NAME "x86")
+    set(ARCH_BITS "32")
+endif()
+message(STATUS "Detected architecture: ${ARCH_NAME} (${ARCH_BITS}-bit)")
+
+# 2. 平台特定设置
+if(WIN32)
+    # Windows 平台
+    set(PLATFORM_NAME "Windows")
+    # 设置 VLD 库的目录名 (Windows specific)
+    if(ARCH_NAME STREQUAL "x64")
+        set(VLD_ARCH_DIR "Win64")
+    else()
+        set(VLD_ARCH_DIR "Win32")
+    endif()
+    # 设置 wxWidgets 库目录的后缀
+    set(WX_ARCH_SUFFIX ${ARCH_NAME})
+
+elseif(APPLE)
+    # macOS 平台
+    set(PLATFORM_NAME "macOS")
+    # macOS 上的 wxWidgets 通常不区分架构目录名，但我们可以预留
+    # set(WX_ARCH_SUFFIX ${ARCH_NAME}) # 通常不需要
+
+elseif(UNIX AND NOT APPLE)
+    # Linux/Unix 平台
+    set(PLATFORM_NAME "Linux")
+    # Linux 上的 wxWidgets 库目录可能需要根据发行版和架构来定
+    # 例如，在 /usr/lib/x86_64-linux-gnu/ 或 /usr/lib/i386-linux-gnu/
+    # find_package(wxWidgets) 是更常用的方式
+    # set(WX_ARCH_SUFFIX ${ARCH_NAME}) # 同样，find_package 通常会处理好
+
+else()
+    set(PLATFORM_NAME "Unknown")
+    message(WARNING "Unsupported platform detected.")
+endif()
+
+message(STATUS "Detected platform: ${PLATFORM_NAME}")
+
+ 
+
+# --- 1. 配置 wxWidgets (按你的要求保留) ---
+# 你的 wxWidgets 路径
+set(WXWIN "F:/Dev/wxWidgets-3.3.0" CACHE PATH "Path to wxWidgets")
+if (NOT EXISTS "${WXWIN}/include/msvc/wx/setup.h")
+    MESSAGE(FATAL_ERROR "\nwxWidgets 库路径设置不正确: ${WXWIN}\n请检查路径是否正确，或设置 WXWIN 环境变量。")
+endif()
+# 添加 wxWidgets 的头文件和库目录
+# 根据架构选择正确的库目录
+if(ARCH_NAME STREQUAL "x64")
+	set(WX_LIB_DIR "${WXWIN}/lib/vc_${ARCH_NAME}_lib")
+else()
+	set(WX_LIB_DIR "${WXWIN}/lib/vc_lib")
+endif()
+
+message(STATUS "Using wxWidgets lib directory: ${WX_LIB_DIR}")
+include_directories(${WXWIN}/include ${WX_LIB_DIR}/mswud) # Debug
+include_directories(${WXWIN}/include ${WX_LIB_DIR}/mswu)  # Release
+link_directories(${WX_LIB_DIR})
+
+# --- 2. 配置第三方库 (更清晰、健壮的方式) ---
+# 定义第三方库的根目录
+set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
+
+
+# ** 2.1 添加 Lua (预编译库，需要区分平台) **
+include_directories(${THIRD_PARTY_DIR}/LuaJIT-2.1/src)  
+
+# ** 2.2 添加 Everything-SDK (预编译库，需要区分平台) **
+include_directories(${THIRD_PARTY_DIR}/Everything-SDK/include) 
+# 注意：你需要根据你的CPU架构选择正确的lib文件
+# link_libraries(${THIRD_PARTY_DIR}/Everything-SDK/lib/Everything64.lib)
+
+# ** 2.3 添加 VLD (Visual Leak Detector, 预编译库，需要区分平台) **
+# VLD 只在 Debug 模式下链接才有意义
+include_directories(${THIRD_PARTY_DIR}/vld/include)
+# 同样，选择 64 位的库
+#link_libraries(debug ${THIRD_PARTY_DIR}/vld/lib/Win64/vld.lib)
+
+
+# --- 3. 配置主程序 (ALMRun) ---
+# 找到所有源文件
 aux_source_directory(src SRCS)
 aux_source_directory(src/Dialog SRCS)
-include_directories(src src/Dialog)
-include_directories(${WXWIN}/include ${WXWIN}/include/msvc)
-link_directories(${WXWIN}/lib/vc_lib)
-if(NOT APPLE)
-	file(GLOB OBJC_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/*.mm)
-	list(REMOVE_ITEM SRCS ${OBJC_SRCS})
-endif()
-if(WIN32)
-	add_executable(${PROJ_NAME} WIN32 ${SRCS} resource/merry.rc)
-else(APPLE)
-	add_executable(${PROJ_NAME} MACOSX_BUNDLE ${SRCS})
-else()
-	add_executable(${PROJ_NAME} ${SRCS})
-endif()
-# add third party libraries
-file(GLOB ALL_THIRD_PARTY_PATH third_party/*)
-foreach(THIRD_PARTY_PATH ${ALL_THIRD_PARTY_PATH})
-	if(NOT (${THIRD_PARTY_PATH} MATCHES "\\.svn$"))
-		message(STATUS "Add third party libraries:\n\tPATH: " ${THIRD_PARTY_PATH})
-		file(GLOB ALL_INCLUDE_PATH ${THIRD_PARTY_PATH}/${PLATFORM}/include ${THIRD_PARTY_PATH}/include)
-		message("\tinclude directories:")
-		foreach(INCLUDE_PATH ${ALL_INCLUDE_PATH})
-		    message("\t  " ${THIRD_PARTY_PATH})
-		    include_directories(${INCLUDE_PATH})
-		endforeach()
 
-		foreach(BUILD_TYPE ${ALL_BUILD_TYPE})
-			string(TOLOWER ${BUILD_TYPE} BUILD_TYPE_LOWER)
-			if (STATIC)
-			    set(THIRD_PARTY_LIB_PATH ${THIRD_PARTY_PATH}/${PLATFORM}/static)
-			    message(STATUS "Build ${BUILD_TYPE} using STATIC lib")
-			else()
-			    set(THIRD_PARTY_LIB_PATH ${THIRD_PARTY_PATH}/${PLATFORM}/${BUILD_TYPE_LOWER})
-			endif()
-			file(GLOB ALL_LIB_PATH ${THIRD_PARTY_LIB_PATH}/*.a ${THIRD_PARTY_LIB_PATH}/*.lib)
-			message("\ttarget_link_libraries:(${BUILD_TYPE})")
-			foreach(LIB_PATH ${ALL_LIB_PATH})
-				message("\t  " ${LIB_PATH})
-				if(${BUILD_TYPE_LOWER} STREQUAL debug)
-					target_link_libraries(${PROJ_NAME} debug ${LIB_PATH})
-				else()
-					target_link_libraries(${PROJ_NAME} optimized ${LIB_PATH})
-				endif()
-			endforeach()
-		endforeach()
-	endif()
-endforeach()
-if(UNIX)
-	find_package(wxWidgets REQUIRED)
-	include(${wxWidgets_USE_FILE})
-	target_link_libraries(${PROJ_NAME} ${wxWidgets_LIBRARIES})
-endif()
-# set flags ���ʹ����-DRTL=MT��������ʹ��/MT�������룬���������ĳ����������п�
+# 添加主程序的头文件目录
+include_directories(src src/Dialog)
+
+# 创建可执行文件
 if(WIN32)
+    add_executable(${PROJ_NAME} WIN32 ${SRCS} resource/merry.rc)
+endif()
+
+# --- 4. 链接所有库到主程序 ---
+target_link_libraries(${PROJ_NAME}
+    # 链接 Lua 库
+	"${THIRD_PARTY_DIR}/LuaJIT-2.1/src/lua51.lib"
+    
+    # --- 链接 Windows 核心库 ---
+    # 添加 Ws2_32 来解决所有网络函数链接错误
+    Ws2_32
+    comctl32
+    rpcrt4
+    Winmm
+    Shell32 
+
+    # 明确链接 Everything-SDK (区分平台)
+    # 直接指定 .lib 文件的完整路径 
+    "${THIRD_PARTY_DIR}/Everything-SDK/lib/Everything${ARCH_BITS}.lib"
+    # 明确链接 VLD (只在 Debug 模式，并区分平台)
+    debug "${THIRD_PARTY_DIR}/vld/lib/${VLD_ARCH_DIR}/debug/vld.lib"
+    
+    # 链接 wxWidgets 核心库 (会自动从 link_directories 中找到)
+    # Debug
+    debug wxbase33ud
+    debug wxmsw33ud_core
+    debug wxmsw33ud_adv
+    
+    # Release
+    optimized wxbase33u
+    optimized wxmsw33u_core
+    optimized wxmsw33u_adv
+
+    # --- 链接 wxWidgets 的附加库 (根据需要添加) ---
+    # Debug
+    debug wxbase33ud_net
+    debug wxpngd
+    debug wxjpegd
+    debug wxzlibd
+    
+    # Release
+    optimized wxbase33u_net
+    optimized wxpng
+    optimized wxjpeg
+    optimized wxzlib
+)
+
+# --- 5. 最终编译器设置 ---
+if(WIN32)
+    # 如果使用 /MT 编译 (可选，一般用默认的 /MD)
     if (RTL STREQUAL MT)
-	foreach(FLAG_VAR
-		CMAKE_CXX_FLAGS
-		CMAKE_CXX_FLAGS_DEBUG
-		CMAKE_CXX_FLAGS_RELEASE
-		CMAKE_CXX_FLAGS_MINSIZEREL
-		CMAKE_CXX_FLAGS_RELWITHDEBINFO)
-	    string(REGEX REPLACE "/MD" "/MT" ${FLAG_VAR} "${${FLAG_VAR}}")
-	endforeach()
+        foreach(FLAG_VAR
+            CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+            CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+            string(REGEX REPLACE "/MD" "/MT" ${FLAG_VAR} "${${FLAG_VAR}}")
+        endforeach()
     endif()
+    # 添加必要的编译宏，并抑制旧函数警告
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_UNICODE -DUNICODE /wd4996")
-    target_link_libraries(${PROJ_NAME} comctl32 rpcrt4)
 endif()
-if(UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-endif()
-# configuration types
-if(CMAKE_CONFIGURATION_TYPES)
-	set(CMAKE_CONFIGURATION_TYPES ${ALL_BUILD_TYPE})
-	set(CMAKE_CONFIGURATION_TYPES ${CMAKE_CONFIGURATION_TYPES} CACHE STRING
-		"Configuration types" FORCE)
-	message(STATUS "Configuration types - ${CMAKE_CONFIGURATION_TYPES}")
-endif()
+
+# --- 打印最终配置信息 ---
+message(STATUS "wxWidgets path: ${WXWIN}")
+message(STATUS "Third party path: ${THIRD_PARTY_DIR}")

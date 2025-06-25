@@ -68,6 +68,6 @@ void MerryHotkey::UnregisterHotkey(int commandID)
 void MerryHotkey::OnTriggerKey(int commandID) const
 {
 	const MerryCommand* command = g_commands->GetCommand(commandID);
-	assert(command);
+	assert(command); 
 	command->Execute(wxEmptyString);
 }

@@ -1,12 +1,13 @@
-#ifndef _SKIN_CONFIG_H_
+Ôªø#ifndef _SKIN_CONFIG_H_
 #define _SKIN_CONFIG_H_
 
 #include "MerryWx.h"
 #include <wx/fileconf.h>
 
-const char		ALMRUN_DEFAULT_TITLE[] = "ALMRun øÏÀŸ∆Ù∂Øπ§æﬂ";
-const char		ALMRUN_DEFAULT_CONFIG_FILE[] = "LuaEx/ALMRun.lua";
-const int		MERRY_DEFAULT_LIST_BOX_ITEM_MAX_NUM = 10;
+const char ALMRUN_DEFAULT_TITLE[] = "ALMRun Âø´ÈÄüÂêØÂä®Â∑•ÂÖ∑";
+const char ALMRUN_DEFAULT_CONFIG_FILE[] = "LuaEx/ALMRun.lua";
+
+const int MERRY_DEFAULT_LIST_BOX_ITEM_MAX_NUM = 10; 
 #define SKIN_TYPE_ALPHA 1
 #define SKIN_TYPE_MEDIUM 2
 #define SKIN_TYPE_MINI 3

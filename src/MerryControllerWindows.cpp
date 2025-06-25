@@ -5,7 +5,10 @@
 #include "MerryInformationDialog.h"
 #include "MerryHelper.h"
 #include <vector>
-#include <Windows.h>
+#include <Windows.h> 
+#include <shellapi.h>
+
+
 
 MerryController::MerryController()
 {
@@ -405,7 +408,7 @@ bool MerryController::ShellExecute(const wxString& commandName,
 }
 */
 
-DWORD MerryController::ShellExecute(const wxString& commandName,
+DWORD MerryController::ShellExecute_almrun(const wxString& commandName,
 	const wxString& commandArg,
 	const wxString& workingDir,
 	const wxString& show) const
@@ -497,11 +500,11 @@ DWORD MerryController::ShellExecute(const wxString& commandName,
 
 	FullcmdName.Replace('/','\\');
 
-#ifdef _ALMRUN_CONFIG_H_
-	if (!g_config->Explorer.empty())
-		::WinExec(wxString::Format("%s \"%s\"",g_config->Explorer,FullcmdName),SW_SHOW);
-	else
-#endif//ifdef _ALMRUN_CONFIG_H_
+//#ifdef _ALMRUN_CONFIG_H_
+//	if (!g_config->Explorer.empty())
+//		::WinExec(wxString::Format("%s \"%s\"",g_config->Explorer,FullcmdName),SW_SHOW);
+//	else
+//#endif//ifdef _ALMRUN_CONFIG_H_
 		::ShellExecute(NULL,NULL,_T("explorer.exe"),_T("/n,/select,")+FullcmdName.c_str(),NULL, SW_SHOW);
 	return 0;
 }

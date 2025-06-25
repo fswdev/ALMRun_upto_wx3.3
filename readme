@@ -11,3 +11,8 @@ Resource
 ========
 ICON:
 http://dakirby309.deviantart.com/art/Metro-UI-Dock-Icon-Set-RELEASED-436-Icons-280724102
+
+
+
+cmake -G "Visual Studio 17 2022" -A win32 ..
+cmake -G "Visual Studio 17 2022" -A x64 ..
