@@ -1,3 +1,7 @@
+
+
+#include "ALMRunCommon.h"
+
 #include "MerryCommandManager.h"
 #include "MerryHotkey.h"
 #include "ALMRunConfig.h"
@@ -5,7 +9,6 @@
 #include "MerryApp.h"
 #include "DlgConfig.h"
 #include <wx/stdpaths.h>
-#include "ALMRunCommon.h"
 
 ALMRunConfig* g_config = NULL;
 const char *ALMRunConfig::config_str[] = {"AutoRun","StayOnTop","NumberKey","ShowTrayIcon","ShowTopTen","ShowCommandLine","ExecuteIfOnlyOne","RememberFavouratMatch","MatchAnywhere","IndexFrom0to9","OrderByPre","ShowTip","DisableWow64FsRedirection","AddToSendTo","PlayPopupNotify","SpaceKey","AutoPopup","DoubleToggleFunc","DoubleClick","DuplicateCMD","cmdSingleProecss","cmdReadShortcut","SaveWinPos","ShowCMDErrInfo"};

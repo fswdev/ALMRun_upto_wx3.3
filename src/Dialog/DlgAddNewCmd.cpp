@@ -214,18 +214,29 @@ void DlgAddNewCmd::OnToggle(wxCommandEvent& e)
 {
 	if (e.IsChecked())
 	{
-		m_toggleButton->SetLabel("切换=>基本");
-		luaBoxSizer->Show(true);
-		cmdBoxSizer->Show(false);
+		//m_toggleButton->SetLabel("切换=>基本");
+		//luaBoxSizer->Show(true);
+		//cmdBoxSizer->Show(false);
+		// 隐藏普通命令Sizer
+		MainBoxSizer->Show(luaBoxSizer, true);
+		MainBoxSizer->Hide(cmdBoxSizer);
+		m_toggleButton->SetLabel("切换=>普通");
 	}
 	else
 	{
+		//m_toggleButton->SetLabel("切换=>LUA");
+		//luaBoxSizer->Show(false);
+		//cmdBoxSizer->Show(true);
+		MainBoxSizer->Hide(luaBoxSizer);
+		MainBoxSizer->Show(cmdBoxSizer, true);
 		m_toggleButton->SetLabel("切换=>LUA");
-		luaBoxSizer->Show(false);
-		cmdBoxSizer->Show(true);
 	}
-	this->GetSizer()->RecalcSizes();
-	e.Skip();
+	//this->GetSizer()->RecalcSizes();
+	//e.Skip();
+	// 关键：通知布局重新计算
+	MainBoxSizer->Layout();
+	this->Layout(); // 或者 itemBoxSizer2->Layout();
+	this->Fit(); // 重新调整对话框大小以适应新内容
 }
 
 void DlgAddNewCmd::OnCmdUpdate(wxCommandEvent& e)
@@ -401,7 +412,9 @@ void DlgAddNewCmd::CreateControls()
 
    	wxStaticBox* MainBoxSizerStatic = new wxStaticBox(itemDialog1, wxID_ANY, "命令参数");
 
-	wxStaticBoxSizer* MainBoxSizer = new wxStaticBoxSizer(MainBoxSizerStatic, wxVERTICAL);
+
+	//wxStaticBoxSizer* MainBoxSizer = new wxStaticBoxSizer(MainBoxSizerStatic, wxVERTICAL);  //fsw comment 20250526
+	MainBoxSizer = new wxStaticBoxSizer(MainBoxSizerStatic, wxVERTICAL);
 //    MainBoxSizerStatic->SetFont(wxFont(9, wxSWISS, wxNORMAL, wxNORMAL, false, wxT("Tahoma")));
     itemBoxSizer2->Add(MainBoxSizer, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
@@ -439,19 +452,29 @@ void DlgAddNewCmd::CreateControls()
     itemBoxSizer9->Add(cmdDesc, 0, wxGROW|wxALL, 5);
 
 	//命令相关信息
-	itemBoxSizerToggle = new wxBoxSizer(wxVERTICAL);
-	MainBoxSizer->Add(itemBoxSizerToggle, 0, wxGROW, 5);
-
+	//itemBoxSizerToggle = new wxBoxSizer(wxVERTICAL);
+	//MainBoxSizer->Add(itemBoxSizerToggle, 0, wxGROW, 5);
+	
 	//LUA脚本模式
 	luaBoxSizer = new wxBoxSizer(wxHORIZONTAL);
-	itemBoxSizerToggle->Add(luaBoxSizer,0,wxGROW|wxALL);
+	//itemBoxSizerToggle->Add(luaBoxSizer,0,wxGROW|wxALL);
+	// 将 luaBoxSizer 直接添加到主 Sizer
+	MainBoxSizer->Add(luaBoxSizer, 1, wxEXPAND | wxALL, 5); // <--- 修改后
 
+
+	// 父窗口保持 MainBoxSizer->GetStaticBox() 是可以的
 	luaCmd = new wxTextCtrl(MainBoxSizer->GetStaticBox(), wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(350,170), wxTE_MULTILINE);
 	luaBoxSizer->Add(luaCmd,0,wxGROW|wxALL,1);
 	setWinHelpText(luaCmd,"高级模式,使用LUA脚本,请输入LUA脚本内容\n注:在脚本中 args:用户输入的参数,cmdID: 命令对应内部ID(非固定)",ShowToolTip);
-	luaCmd->Show(false);
+	//luaCmd->Show(false);
+	// 正确的隐藏方式应该是隐藏 Sizer
+	MainBoxSizer->Hide(luaBoxSizer); // <--- 修改后
+
+
 	cmdBoxSizer = new wxBoxSizer(wxVERTICAL);
-	itemBoxSizerToggle->Add(cmdBoxSizer, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+	//itemBoxSizerToggle->Add(cmdBoxSizer, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+	// 将 cmdBoxSizer 也直接添加到主 Sizer
+	MainBoxSizer->Add(cmdBoxSizer, 0, wxEXPAND | wxALL, 0); // <--- 修改后
 
     wxBoxSizer* itemBoxSizer13 = new wxBoxSizer(wxHORIZONTAL);
     cmdBoxSizer->Add(itemBoxSizer13, 0, wxGROW|wxLEFT, 5);

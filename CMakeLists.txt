@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.5)
 set(PROJ_NAME ALMRun)
 project(${PROJ_NAME})
 add_definitions(-DWIN32_LEAN_AND_MEAN) # 解决 Winsock 冲突
+add_definitions(-DWIN32_LEAN_AND_MEAN -D_WIN32_WINNT=0x0601)
 # 1. 通用架构检测 (适用于所有平台)
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(ARCH_NAME "x64")

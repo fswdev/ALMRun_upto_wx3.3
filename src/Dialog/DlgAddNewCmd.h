@@ -125,6 +125,8 @@ protected:
 	wxBoxSizer* itemBoxSizerToggle;
 	wxToggleButton* m_toggleButton;
 	wxBoxSizer* itemBoxSizer2;
+	// 新增的成员变量，用于布局控制
+	wxStaticBoxSizer* MainBoxSizer;
 };
 
 #endif

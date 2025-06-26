@@ -1,6 +1,18 @@
 #pragma once
 #ifndef _ALMRUN_COMMON_H_
 #define _ALMRUN_COMMON_H_
+
+// --- 新增的区块 ---
+// 在 Windows 平台下，强制优先包含 Windows 核心头文件
+// 这可以确保 Windows SDK 的宏定义先于 wxWidgets 的兼容性宏定义被处理
+// 从而从根本上解决 C4005 宏重定义警告。
+#if defined(__WXMSW__)
+#include <windows.h>
+#endif
+// --- 新增结束 ---
+
+
+
 #include <shlobj.h>
 #include <wx/fileconf.h>
 #include "MerryWx.h"

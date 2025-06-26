@@ -4,10 +4,9 @@
 #include "ALMRunConfig.h"
 #include "MerryInformationDialog.h"
 #include "MerryHelper.h"
-#include <vector>
-#include <Windows.h> 
-#include <shellapi.h>
+#include <vector> 
 
+#include <shellapi.h>
 
 
 MerryController::MerryController()
