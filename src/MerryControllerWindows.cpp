@@ -499,11 +499,13 @@ DWORD MerryController::ShellExecute_almrun(const wxString& commandName,
 
 	FullcmdName.Replace('/','\\');
 
-//#ifdef _ALMRUN_CONFIG_H_
-//	if (!g_config->Explorer.empty())
-//		::WinExec(wxString::Format("%s \"%s\"",g_config->Explorer,FullcmdName),SW_SHOW);
-//	else
-//#endif//ifdef _ALMRUN_CONFIG_H_
+#ifdef _ALMRUN_CONFIG_H_
+	if (!g_config->Explorer.empty())
+		//::WinExec(wxString::Format("%s \"%s\"",g_config->Explorer,FullcmdName),SW_SHOW);
+		::WinExec(wxString::Format("%s /n,/select,\"%s\"", g_config->Explorer, FullcmdName), SW_SHOW);
+	else
+#endif//ifdef _ALMRUN_CONFIG_H_
+	//wxMessageBox(FullcmdName);
 		::ShellExecute(NULL,NULL,_T("explorer.exe"),_T("/n,/select,")+FullcmdName.c_str(),NULL, SW_SHOW);
 	return 0;
 }
