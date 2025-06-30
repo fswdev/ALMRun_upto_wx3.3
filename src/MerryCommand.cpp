@@ -180,7 +180,7 @@ int MerryCommand::GetOrder() const
 	return m_order;
 }
 
-void MerryCommand::Execute(const wxString& commandArg) const
+void MerryCommand::Execute(const wxString& commandArg) const // 111
 {
 	if (!g_lua)
 		return;
@@ -189,7 +189,8 @@ void MerryCommand::Execute(const wxString& commandArg) const
 	wxString cmdArg = commandArg;
 	assert(L);
 	#ifdef __WXMSW__
-	if (PID > 1)//禁止多个进程
+	//if (PID > 1)//禁止多个进程
+	if (PID > 1 && !LocationExec)//禁止多个进程  // fsw fix 20250630
 	{
 		if (CheckActiveProg(PID))
 		{//已经运行,查找前激活之前的窗口

@@ -407,6 +407,21 @@ bool MerryController::ShellExecute(const wxString& commandName,
 }
 */
 
+void fsw_WinExec(wxString command_param,INT nShowCmd) {
+	//::WinExec(wxString::Format("%s /n,/select,\"%s\"", g_config->Explorer, FullcmdName), SW_SHOW);
+	wxMessageBox(command_param);
+	::WinExec(command_param, nShowCmd);
+}
+void fsw_ShellExecute(HWND    hwnd,LPCWSTR lpOperation,LPCWSTR lpFile,LPCWSTR lpParameters,LPCWSTR lpDirectory,INT     nShowCmd) {
+	//::ShellExecute(NULL, NULL, _T("explorer.exe"), _T("/n,/select,") + FullcmdName.c_str(), NULL, SW_SHOW);
+	wxString ss = wxString::Format("lpFile:%s\nlpParameters:%s\nlpDirectory:%s\n", lpFile, lpParameters, lpDirectory);
+	wxMessageBox(ss);
+	::ShellExecute(NULL, NULL, lpFile, lpParameters, lpDirectory, SW_SHOW);
+}
+
+ 
+
+
 DWORD MerryController::ShellExecute_almrun(const wxString& commandName,
 	const wxString& commandArg,
 	const wxString& workingDir,
@@ -502,11 +517,12 @@ DWORD MerryController::ShellExecute_almrun(const wxString& commandName,
 #ifdef _ALMRUN_CONFIG_H_
 	if (!g_config->Explorer.empty())
 		//::WinExec(wxString::Format("%s \"%s\"",g_config->Explorer,FullcmdName),SW_SHOW);
-		::WinExec(wxString::Format("%s /n,/select,\"%s\"", g_config->Explorer, FullcmdName), SW_SHOW);
+		//::WinExec(wxString::Format("%s /n,/select,\"%s\"", g_config->Explorer, FullcmdName), SW_SHOW);
+		fsw_WinExec(wxString::Format("%s /n,/select,\"%s\"", g_config->Explorer, FullcmdName), SW_SHOW);
 	else
-#endif//ifdef _ALMRUN_CONFIG_H_
-	//wxMessageBox(FullcmdName);
-		::ShellExecute(NULL,NULL,_T("explorer.exe"),_T("/n,/select,")+FullcmdName.c_str(),NULL, SW_SHOW);
+#endif//ifdef _ALMRUN_CONFIG_H_ 
+		//::ShellExecute(NULL,NULL,_T("explorer.exe"),_T("/n,/select,")+FullcmdName.c_str(),NULL, SW_SHOW);
+		fsw_ShellExecute(NULL, NULL, _T("explorer.exe"), _T("/n,/select,") + FullcmdName.c_str(), NULL, SW_SHOW);
 	return 0;
 }
 
