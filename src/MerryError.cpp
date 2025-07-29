@@ -21,7 +21,7 @@ void ShowErrinfo(const int error_type)
 
 	if (error_type< CONFIG_ERROR_TYPE)
 	{
-		wxMessageBox("提示",s_lastError,wxICON_INFORMATION);
+		wxMessageBox(s_lastError,"提示",wxICON_INFORMATION);
 		return;
 	}
 	if (!g_config->get((CONFIG_ITEM_T)error_type))
